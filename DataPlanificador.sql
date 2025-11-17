@@ -191,60 +191,28 @@ INSERT INTO materias (semestre, creditos, nombre_materia, clave_materia) VALUES
 ('noveno', 8, 'MINERIA DE DATOS', '1908');
 
 -- Horario de materias 
-CREATE TABLE horarios_mat (
+CREATE TABLE horarios (
     id_horario INT PRIMARY KEY AUTO_INCREMENT,
     hora VARCHAR(15) NOT NULL,
-    matutino BOOLEAN NOT NULL
+    dias VARCHAR(3) NOT NULL
 );
 -- INSERT DE DATOS 
 
-INSERT INTO horarios_mat (hora, matutino) VALUES
-('07:00-08:20', TRUE),
-('07:00-08:30', TRUE),
-('07:00-09:00', TRUE),
-('07:00-09:15', TRUE),
-('07:00-11:00', TRUE),
-('08:00-10:00', TRUE),
-('08:30-09:50', TRUE),
-('08:30-10:00', TRUE),
-('08:40-10:00', TRUE),
-('08:45-11:00', TRUE),
-('09:00-11:00', TRUE),
-('09:00-13:00', TRUE),
-('10:00-11:20', TRUE),
-('10:00-11:30', TRUE),
-('10:00-12:00', TRUE),
-('10:00-14:00', TRUE),
-('10:45-13:00', TRUE),
-('11:00-12:20', TRUE),
-('11:00-13:00', TRUE),
-('11:00-15:00', TRUE),
-('11:20-12:40', TRUE),
-('11:30-12:50', TRUE),
-('11:30-13:00', TRUE),
-('11:40-13:00', TRUE),
-('12:45-15:00', TRUE),
-('13:00-14:20', TRUE),
-('13:00-14:30', TRUE),
-('13:00-15:00', TRUE),
-('13:00-15:15', FALSE),
-('14:00-16:00', FALSE),
-('14:30-16:00', FALSE),
-('14:40-16:00', FALSE),
-('15:00-16:20', FALSE),
-('15:00-16:30', FALSE),
-('15:00-17:00', FALSE),
-('16:00-18:00', FALSE),
-('16:20-17:40', FALSE),
-('16:30-18:00', FALSE),
-('16:30-18:30', FALSE),
-('16:40-18:00', FALSE),
-('17:00-18:20', FALSE),
-('17:00-18:30', FALSE),
-('17:00-19:00', FALSE),
-('17:00-20:00', FALSE),
-('18:00-19:20', FALSE),
-('18:00-19:30', FALSE),
-('18:00-20:00', FALSE),
-('18:30-20:00', FALSE),
-('19:00-21:00', FALSE);
+INSERT INTO horarios (hora, dias) VALUES
+('07:00-8:20', 'LMV'),
+('08:40-10:00', 'LMV'),
+('10:00-11:20', 'LMV'),
+('11:40-13:00', 'LMV'),
+('13:00-14:20', 'LMV'),
+('14:40-16:00', 'LMV'),
+('16:00-17:20', 'LMV'),
+('17:40-19:00', 'LMV'),
+('19:00-21:20', 'LMV'),
+
+('07:00-9:00', 'MJ'),
+('09:00-11:00', 'MJ'),
+('11:00-13:00', 'MJ'),
+('13:00-15:00', 'MJ'),
+('15:00-17:00', 'MJ'),
+('17:00-19:00', 'MJ'),
+('19:00-21:00', 'MJ');
