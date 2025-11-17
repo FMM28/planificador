@@ -29,10 +29,12 @@ print(df_mat)
 print(df_mat.dtypes)
 
 #Materias por profesor
-# res = conn.consultar("SELECT id_profesor, id_materia FROM profesor_materia")
-# df_prof_mat = pd.DataFrame(res,columns=['id_profesor','id_materia'])
-# print(df_prof_mat)
-# print(df_prof_mat.dtypes)
+res = conn.consultar("SELECT m.nombre_materia AS materia, p.nombre AS profesor FROM profesor p JOIN profesor_materia pm ON pm.id_prof = p.id_prof JOIN materias m ON pm.id_mat = m.id;")
+df_prof_mat = pd.DataFrame(res,columns=['materia','profesor'])
+df_prof_mat = df_prof_mat.sort_values(by=['materia', 'profesor'])
+df_prof_mat = df_prof_mat.reset_index(drop=True)
+print(df_prof_mat)
+print(df_prof_mat.dtypes)
 
 #Salones y horarios
 # res = conn.consultar("SELECT id_salon, salon FROM salones")
