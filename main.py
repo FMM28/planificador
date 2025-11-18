@@ -117,16 +117,19 @@ def calcular_peso_salon(hora, turno, salon):
 
 # Calcular pesos de salon-horario
 df_salon_horario['peso'] = df_salon_horario.apply(lambda row: calcular_peso_salon(row['hora'], row['turno'], row['salon']), axis=1)
-df_salon_horario = df_salon_horario.sort_values(['peso','salon','hora'], ascending=[False,True,True]).reset_index(drop=True)
+df_salon_horario = df_salon_horario.sort_values(by=['peso','salon','hora'], ascending=[False,True,True]).reset_index(drop=True)
 print(df_salon_horario)
 
-df_salon_horario.to_csv('salones_horarios.csv', index=False, encoding='utf-8')
+#Calcular pesos de profesor-materia
 
 #----------- Asignacion de grupos ------------
 print("Total de grupos por asignar:",sum(df_mat['grupos_mat'])+sum(df_mat['grupos_des']))
 
 #Preparacion columnas soporte
 df_prof['mat_asig'] = 0
+df_salon_horario['grupo'] = None
+df_salon_horario['materia'] = None
+df_salon_horario['profesor'] = None
 
 #DF de asignacion
 grupos = []
@@ -155,4 +158,9 @@ for idx, row in grupos.iterrows():
 columnas_asig = ['grupo','materia','profesor','salon','hora','dias','turno']
 df_asig = pd.DataFrame(asignaciones, columns=columnas_asig)
 print(df_asig)
+
+# Asignacion de profesores y salones
+
+#----------- Exportacion de datos ------------
 df_asig.to_csv('asignaciones.csv', index=False, encoding='utf-8')
+df_salon_horario.to_csv('salones_horarios.csv', index=False, encoding='utf-8')
