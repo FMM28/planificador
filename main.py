@@ -37,7 +37,7 @@ print(df_prof_mat)
 print(df_prof_mat.dtypes)
 
 #Salones y horarios
-res = conn.consultar("SELECT id_salon FROM salones")
+res = conn.consultar("SELECT salon FROM salones")
 df_salones = pd.DataFrame(res,columns=['salon'])
 res = conn.consultar("SELECT id_horario, hora, dias  FROM horarios")
 df_horarios = pd.DataFrame(res,columns=['id_horario','hora','dias'])
