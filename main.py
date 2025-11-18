@@ -125,3 +125,34 @@ df_salon_horario.to_csv('salones_horarios.csv', index=False, encoding='utf-8')
 #----------- Asignacion de grupos ------------
 print("Total de grupos por asignar:",sum(df_mat['grupos_mat'])+sum(df_mat['grupos_des']))
 
+#Preparacion columnas soporte
+df_prof['mat_asig'] = 0
+
+#DF de asignacion
+grupos = []
+for i in range(1,10):
+    n = 2 if i % 2 == 0 else 4
+    for j in range(1,n+1):
+        grupo_id = f"1{i}0{j}"
+        grupos.append((i,grupo_id,'matutino'))
+        grupo_id = f"1{i}5{j}"
+        grupos.append((i,grupo_id,'vespertino'))
+grupos = pd.DataFrame(grupos,columns=['semestre','grupo','turno'])
+grupos = grupos.sort_values(by=['semestre','turno']).reset_index(drop=True)     
+print(grupos)
+
+asignaciones = []
+for idx, row in grupos.iterrows():
+    semestre = row['semestre']
+    grupo = row['grupo']
+    turno = row['turno']
+    
+    materias_sem = df_mat[df_mat['semestre'] == semestre]['nombre_materia']
+    
+    for materia in materias_sem:
+        asignaciones.append([grupo, materia, None, None, None, None, turno])
+        
+columnas_asig = ['grupo','materia','profesor','salon','hora','dias','turno']
+df_asig = pd.DataFrame(asignaciones, columns=columnas_asig)
+print(df_asig)
+df_asig.to_csv('asignaciones.csv', index=False, encoding='utf-8')
