@@ -50,3 +50,78 @@ print(df_salon_horario.dtypes)
 
 conn.cerrar()
 
+#----------- Calculo de pesos ------------
+
+def calcular_peso_salon(hora, turno, salon):
+    # Extraer solo la hora
+    hora_num = int(hora.split(':')[0])
+    
+    # Determinar el edificio del salon
+    if salon.startswith('A2'):
+        edificio = 'A2'
+    elif salon.startswith('A5'):
+        edificio = 'A5'
+    elif salon.startswith('A8'):
+        edificio = 'A8'
+    elif salon.startswith('A11'):
+        edificio = 'A11'
+    
+    # Peso base por horario
+    peso_horario = 0
+    if turno == 'matutino':
+        if hora_num == 7:
+            peso_horario = 100
+        elif hora_num == 8:
+            peso_horario = 90
+        elif hora_num == 9:
+            peso_horario = 80
+        elif hora_num == 10:
+            peso_horario = 70
+        elif hora_num == 11:
+            peso_horario = 60
+        elif hora_num == 12:
+            peso_horario = 50
+        elif hora_num == 13:
+            peso_horario = 40
+        else:
+            peso_horario = 30
+    else: 
+        if hora_num == 14:
+            peso_horario = 100
+        elif hora_num == 15:
+            peso_horario = 90
+        elif hora_num == 16:
+            peso_horario = 80
+        elif hora_num == 17:
+            peso_horario = 70
+        elif hora_num == 18:
+            peso_horario = 60
+        elif hora_num == 19:
+            peso_horario = 50
+        elif hora_num == 20:
+            peso_horario = 40
+        else:
+            peso_horario = 30
+    
+    # Ajuste por edificio
+    if edificio == 'A2':
+        peso_horario += 20
+    elif edificio == 'A5':
+        peso_horario += 10
+    elif edificio == 'A8':
+        peso_horario += 0
+    elif edificio == 'A11':
+        peso_horario += -10
+    
+    return peso_horario
+
+# Calcular pesos de salon-horario
+df_salon_horario['peso'] = df_salon_horario.apply(lambda row: calcular_peso_salon(row['hora'], row['turno'], row['salon']), axis=1)
+df_salon_horario = df_salon_horario.sort_values(['peso','salon','hora'], ascending=[False,True,True]).reset_index(drop=True)
+print(df_salon_horario)
+
+df_salon_horario.to_csv('salones_horarios.csv', index=False, encoding='utf-8')
+
+#----------- Asignacion de grupos ------------
+print("Total de grupos por asignar:",sum(df_mat['grupos_mat'])+sum(df_mat['grupos_des']))
+
