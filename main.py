@@ -121,6 +121,44 @@ df_salon_horario = df_salon_horario.sort_values(by=['peso','salon','hora'], asce
 print(df_salon_horario)
 
 #Calcular pesos de profesor-materia
+## Parte de Angel 
+# * primero consultar cuantas materias puede dar cada profesor: 
+res = conn.consultar("""
+SELECT p.id_prof, p.nombre, COUNT(pm.id_mat) AS total_materias
+FROM profesor p
+LEFT JOIN profesor_materia pm ON pm.id_prof = p.id_prof
+GROUP BY p.id_prof, p.nombre
+""")
+
+df_prof_cant = pd.DataFrame(res, columns=['id_prof', 'nombre', 'total_materias'])
+print(df_prof_cant)
+
+# * Asignacion de pesos: 
+df_prof_cant['peso'] = pd.cut(
+    df_prof_cant['total_materias'],
+    bins=[0, 1, 2, 3, 4, 100],  
+    labels=[1, 2, 3, 4, 5]      
+).astype(int)
+
+cursor = conn.cursor()
+
+for _, row in df_prof_cant.iterrows():
+    update_query = """
+    UPDATE profesor_materia 
+    SET peso = %s 
+    WHERE id_prof = %s
+    """
+    cursor.execute(update_query, (row['peso'], row['id_prof']))
+
+conn.commit()
+cursor.close()
+
+print("Pesos actualizados en la base de datos")
+
+df_prof = df_prof.merge(df_prof_cant[['id_prof', 'total_materias', 'peso']],
+                        left_on='id_profesor', right_on='id_prof')
+
+df_prof.drop(columns=['id_prof'], inplace=True)
 
 #----------- Asignacion de grupos ------------
 print("Total de grupos por asignar:",sum(df_mat['grupos_mat'])+sum(df_mat['grupos_des']))
