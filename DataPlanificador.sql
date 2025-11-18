@@ -413,3 +413,38 @@ INSERT INTO profesor_materia(id_prof,id_mat) VALUES
 (100,1),
 (100,3),
 (100,14);
+
+CREATE TABLE salones (
+    id_salon VARCHAR(10) NOT NULL,
+    horario VARCHAR(50) NULL,
+    PRIMARY KEY (id_salon)
+);
+
+INSERT INTO salones (id_salon, horario) VALUES ('A203', NULL);
+INSERT INTO salones (id_salon, horario) VALUES ('A204', NULL);
+INSERT INTO salones (id_salon, horario) VALUES ('A205', NULL);
+INSERT INTO salones (id_salon, horario) VALUES ('A211', NULL);
+INSERT INTO salones (id_salon, horario) VALUES ('A212', NULL);
+INSERT INTO salones (id_salon, horario) VALUES ('A213', NULL);
+INSERT INTO salones (id_salon, horario) VALUES ('A214', NULL);
+INSERT INTO salones (id_salon, horario) VALUES ('A215', NULL);
+INSERT INTO salones (id_salon, horario) VALUES ('A221', NULL);
+INSERT INTO salones (id_salon, horario) VALUES ('A222', NULL);
+INSERT INTO salones (id_salon, horario) VALUES ('A223', NULL);
+INSERT INTO salones (id_salon, horario) VALUES ('A224', NULL);
+INSERT INTO salones (id_salon, horario) VALUES ('A225', NULL);
+INSERT INTO salones (id_salon, horario) VALUES ('A504', NULL);
+INSERT INTO salones (id_salon, horario) VALUES ('A505', NULL);
+INSERT INTO salones (id_salon, horario) VALUES ('A506', NULL);
+INSERT INTO salones (id_salon, horario) VALUES ('A507', NULL);
+INSERT INTO salones (id_salon, horario) VALUES ('A508', NULL);
+
+INSERT INTO salones (id_salon, horario) VALUES ('A811', NULL);
+INSERT INTO salones (id_salon, horario) VALUES ('A812', NULL);
+INSERT INTO salones (id_salon, horario) VALUES ('A813', NULL);
+INSERT INTO salones (id_salon, horario) VALUES ('A814', NULL);
+INSERT INTO salones (id_salon, horario) VALUES ('A815', NULL);
+INSERT INTO salones (id_salon, horario) VALUES ('A816', NULL);
+INSERT INTO salones (id_salon, horario) VALUES ('A817', NULL);
+INSERT INTO salones (id_salon, horario) VALUES ('A818', NULL);
+INSERT INTO salones (id_salon, horario) VALUES ('A819', NULL);

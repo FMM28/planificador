@@ -37,17 +37,16 @@ print(df_prof_mat)
 print(df_prof_mat.dtypes)
 
 #Salones y horarios
-# res = conn.consultar("SELECT id_salon, salon FROM salones")
-# df_salones = pd.DataFrame(res,columns=['id_salon','salon'])
-# df_salones.drop(columns=['id_salon'], inplace=True)
+res = conn.consultar("SELECT id_salon FROM salones")
+df_salones = pd.DataFrame(res,columns=['salon'])
 res = conn.consultar("SELECT id_horario, hora, dias  FROM horarios")
 df_horarios = pd.DataFrame(res,columns=['id_horario','hora','dias'])
 df_horarios['turno'] = df_horarios['hora'].apply(lambda h: 'matutino' if int(h.split(':')[0]) < 14 else 'vespertino')
 df_horarios.drop(columns=['id_horario'], inplace=True)
 print(df_horarios)
-# df_salon_horario = df_salones.merge(df_horarios, how='cross')
-# print(df_salon_horario)
-# print(df_salon_horario.dtypes)
+df_salon_horario = df_salones.merge(df_horarios, how='cross')
+print(df_salon_horario)
+print(df_salon_horario.dtypes)
 
 conn.cerrar()
 
