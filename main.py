@@ -14,7 +14,6 @@ df_prof['materias'] = pd.cut(df_prof['calificacion'], bins=[0,2,4,6,8,10], label
 df_prof['materias'] = df_prof['materias'].astype(int)
 df_prof['da_matutino'] = df_prof['da_matutino'].astype(bool)
 df_prof['da_vespertino'] = df_prof['da_vespertino'].astype(bool)
-df_prof.drop(columns=['id_profesor'], inplace=True)
 print(df_prof)
 print(df_prof.dtypes)
 
@@ -48,7 +47,6 @@ df_salon_horario = df_salones.merge(df_horarios, how='cross')
 print(df_salon_horario)
 print(df_salon_horario.dtypes)
 
-conn.cerrar()
 
 #----------- Calculo de pesos ------------
 
@@ -137,28 +135,18 @@ print(df_prof_cant)
 df_prof_cant['peso'] = pd.cut(
     df_prof_cant['total_materias'],
     bins=[0, 1, 2, 3, 4, 100],  
-    labels=[1, 2, 3, 4, 5]      
+    labels=[5,4,3,2,1]      
 ).astype(int)
-
-cursor = conn.cursor()
-
-for _, row in df_prof_cant.iterrows():
-    update_query = """
-    UPDATE profesor_materia 
-    SET peso = %s 
-    WHERE id_prof = %s
-    """
-    cursor.execute(update_query, (row['peso'], row['id_prof']))
-
-conn.commit()
-cursor.close()
-
-print("Pesos actualizados en la base de datos")
 
 df_prof = df_prof.merge(df_prof_cant[['id_prof', 'total_materias', 'peso']],
                         left_on='id_profesor', right_on='id_prof')
 
 df_prof.drop(columns=['id_prof'], inplace=True)
+df_prof.drop(columns=['id_profesor'], inplace=True)
+
+print(df_prof)
+
+conn.cerrar()
 
 #----------- Asignacion de grupos ------------
 print("Total de grupos por asignar:",sum(df_mat['grupos_mat'])+sum(df_mat['grupos_des']))
