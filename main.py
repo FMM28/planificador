@@ -187,6 +187,7 @@ print(df_asig)
 
 # Asignacion de profesores y salones
 
+#Profesores
 def obtener_profe_para_materia(materia, turno, priorizar_sin_carga=False):
 
     # 1. Obtener profesores que pueden dar esa materia
@@ -274,9 +275,115 @@ def asignar_profesores():
         # Actualizar mat_asig en df_prof
         df_prof.loc[df_prof["nombre"] == profesor, "mat_asig"] += 1
 
-# Ejecutar la asignación mejorada
 asignar_profesores()
+
+#Salones y horarios
+def asignar_horarios():
+    for idx, row in df_asig.iterrows():
+        materia = row['materia']
+        profesor = row['profesor']
+        grupo = row['grupo']
+        turno_grupo = row['turno']
+
+        # 1. Filtrar horarios disponibles por turno
+        disponibles = df_salon_horario[(df_salon_horario['grupo'].isnull()) & (df_salon_horario['turno'] == turno_grupo)].copy()
+
+        # 2. Evitar conflictos del profesor
+        conflictos_prof = df_salon_horario[(df_salon_horario['profesor'] == profesor)][['hora','dias']]
+        if not conflictos_prof.empty:
+            disponibles = disponibles.merge(conflictos_prof,on=['hora','dias'],how='left',indicator=True)
+            disponibles = disponibles[disponibles['_merge'] == 'left_only'].drop(columns=['_merge'])
+
+        # 3. Evitar conflictos del mismo grupo
+        conflictos_grupo = df_salon_horario[(df_salon_horario['grupo'] == grupo)][['hora','dias']]
+        if not conflictos_grupo.empty:
+            disponibles = disponibles.merge(conflictos_grupo,on=['hora','dias'],how='left',indicator=True)
+            disponibles = disponibles[disponibles['_merge'] == 'left_only'].drop(columns=['_merge'])
+
+        # 4. Si no hay disponibles, intentar intercambio de salon
+        if disponibles.empty:
+            # Buscar candidatos
+            candidatos_intercambio = df_salon_horario[(df_salon_horario['grupo'].notnull()) & (df_salon_horario['turno'] == turno_grupo)].copy()
+            
+            # Filtrar para que el profesor no tenga conflicto
+            if not conflictos_prof.empty:
+                candidatos_intercambio = candidatos_intercambio.merge(conflictos_prof,on=['hora','dias'],how='left',indicator=True)
+                candidatos_intercambio = candidatos_intercambio[candidatos_intercambio['_merge'] == 'left_only'].drop(columns=['_merge'])
+            
+            # Filtrar para que el grupo no tenga conflicto
+            if not conflictos_grupo.empty:
+                candidatos_intercambio = candidatos_intercambio.merge(conflictos_grupo,on=['hora','dias'],how='left',indicator=True)
+                candidatos_intercambio = candidatos_intercambio[candidatos_intercambio['_merge'] == 'left_only'].drop(columns=['_merge'])
+            
+            intercambio_exitoso = False
+            
+            for _, candidato in candidatos_intercambio.iterrows():
+                idx_candidato = candidato.name
+                prof_candidato = candidato['profesor']
+                grupo_candidato = candidato['grupo']
+                materia_candidato = candidato['materia']
+                
+                disponibles_para_candidato = df_salon_horario[(df_salon_horario['grupo'].isnull()) & (df_salon_horario['turno'] == turno_grupo)].copy()
+                conflictos_candidato = df_salon_horario[(df_salon_horario['profesor'] == prof_candidato)][['hora','dias']]
+                if not conflictos_candidato.empty:
+                    disponibles_para_candidato = disponibles_para_candidato.merge(conflictos_candidato,on=['hora','dias'],how='left',indicator=True)
+                    disponibles_para_candidato = disponibles_para_candidato[disponibles_para_candidato['_merge'] == 'left_only'].drop(columns=['_merge'])
+                conflictos_grupo_candidato = df_salon_horario[(df_salon_horario['grupo'] == grupo_candidato)][['hora','dias']]
+                if not conflictos_grupo_candidato.empty:
+                    disponibles_para_candidato = disponibles_para_candidato.merge(conflictos_grupo_candidato,on=['hora','dias'],how='left',indicator=True)
+                    disponibles_para_candidato = disponibles_para_candidato[disponibles_para_candidato['_merge'] == 'left_only'].drop(columns=['_merge'])
+                
+                if not disponibles_para_candidato.empty:
+                    nuevo_candidato = disponibles_para_candidato.iloc[0]
+                    idx_nuevo = nuevo_candidato.name
+                    salon_liberado = candidato['salon']
+                    hora_liberada = candidato['hora']
+                    dias_liberados = candidato['dias']
+                    
+                    df_salon_horario.at[idx_nuevo, 'grupo'] = grupo_candidato
+                    df_salon_horario.at[idx_nuevo, 'materia'] = materia_candidato
+                    df_salon_horario.at[idx_nuevo, 'profesor'] = prof_candidato
+                    mask_asig = ((df_asig['profesor'] == prof_candidato) &(df_asig['grupo'] == grupo_candidato) &(df_asig['materia'] == materia_candidato))
+                    df_asig.loc[mask_asig, 'salon'] = nuevo_candidato['salon']
+                    df_asig.loc[mask_asig, 'hora'] = nuevo_candidato['hora']
+                    df_asig.loc[mask_asig, 'dias'] = nuevo_candidato['dias']
+                    
+                    df_salon_horario.at[idx_candidato, 'grupo'] = grupo
+                    df_salon_horario.at[idx_candidato, 'materia'] = materia
+                    df_salon_horario.at[idx_candidato, 'profesor'] = profesor
+                    df_asig.at[idx, 'salon'] = salon_liberado
+                    df_asig.at[idx, 'hora'] = hora_liberada
+                    df_asig.at[idx, 'dias'] = dias_liberados
+                    
+                    intercambio_exitoso = True
+                    print(f"Se reasigno {prof_candidato}: {salon_liberado} {hora_liberada} {dias_liberados} a {nuevo_candidato['salon']} {nuevo_candidato['hora']} {nuevo_candidato['dias']}")
+                    break
+            
+            if not intercambio_exitoso:
+                print(f"No se pudo reasignar: {materia} - {profesor} - {grupo}")
+            continue
+
+        # 5. Seleccionar el horario con mayor peso
+        disponibles = disponibles.sort_values(by=['peso', 'salon', 'hora'], ascending=[False, True, True])
+        asignado = disponibles.iloc[0]
+
+        # 6. Registrar en df_asig
+        df_asig.at[idx, 'salon'] = asignado['salon']
+        df_asig.at[idx, 'hora'] = asignado['hora']
+        df_asig.at[idx, 'dias'] = asignado['dias']
+        df_asig.at[idx, 'turno'] = asignado['turno']
+
+        # 7. Marcar como ocupado en df_salon_horario
+        mask = ((df_salon_horario['salon'] == asignado['salon']) & (df_salon_horario['hora'] == asignado['hora']) & (df_salon_horario['dias'] == asignado['dias']) & (df_salon_horario['turno'] == asignado['turno']))
+        df_salon_horario.loc[mask, 'grupo'] = grupo
+        df_salon_horario.loc[mask, 'materia'] = materia
+        df_salon_horario.loc[mask, 'profesor'] = profesor
+
+asignar_horarios()
 
 # Exportación de datos
 df_asig.to_csv('asignaciones.csv', index=False, encoding='utf-8')
-df_salon_horario.to_csv('salones_horarios.csv', index=False, encoding='utf-8')
+df_salon_horario_export = df_salon_horario[['salon','hora','dias','turno','grupo','materia','profesor']].copy()
+df_salon_horario_export['salon_sort'] = df_salon_horario_export['salon'].str.extract(r'[aA](\d+)')[0].astype(int)
+df_salon_horario_export = df_salon_horario_export.sort_values(by=['salon_sort','salon','hora']).drop(columns=['salon_sort']).reset_index(drop=True)
+df_salon_horario_export.to_csv('salones_horarios.csv', index=False, encoding='utf-8')
