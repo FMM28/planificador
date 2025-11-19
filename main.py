@@ -187,6 +187,96 @@ print(df_asig)
 
 # Asignacion de profesores y salones
 
-#----------- Exportacion de datos ------------
+def obtener_profe_para_materia(materia, turno, priorizar_sin_carga=False):
+
+    # 1. Obtener profesores que pueden dar esa materia
+    posibles = df_prof_mat[df_prof_mat["materia"] == materia]["profesor"]
+
+    # 2. Filtrar df_prof para esos profesores
+    df = df_prof[df_prof["nombre"].isin(posibles)].copy()
+
+    # 3. Filtrar por disponibilidad de turno
+    if turno == "matutino":
+        df = df[df["da_matutino"] == 1]
+    elif turno == "vespertino":
+        df = df[df["da_vespertino"] == 1]
+
+    # 4. Filtrar profesores con carga disponible
+    df = df[df["mat_asig"] < df["materias"]]
+
+    if df.empty:
+        return None
+
+    # 5. Si se prioriza dar carga a profesores sin materias
+    if priorizar_sin_carga:
+        sin_carga = df[df["mat_asig"] == 0]
+        if not sin_carga.empty:
+            df = sin_carga
+
+    # 6. Ordenar por mat_asig y por peso
+    df = df.sort_values(by=['mat_asig', 'peso'], ascending=[True, False])
+
+    # 7. Tomar el profesor con mayor prioridad
+    return df.iloc[0]["nombre"]
+
+def asignar_profesores():
+    # Dos pasadas, la primera asegura que cada profesor tenga al menos una materia,
+    # Segunda pasada reparte el resto de materias, y asigna grupos adicionales
+    for idx, row in df_asig.iterrows():
+        materia = row["materia"]
+        turno = row["turno"]
+
+        # Asignar priorizando profesores sin carga
+        profesor = obtener_profe_para_materia(materia=materia, turno=turno, priorizar_sin_carga=True)
+
+        if profesor is None:
+            continue
+        
+        # Registrar el profesor en df_asig
+        df_asig.loc[idx, "profesor"] = profesor
+        
+        # Actualizar mat_asig en df_prof
+        df_prof.loc[df_prof["nombre"] == profesor, "mat_asig"] += 1
+    
+    # Completar asignaciones pendientes
+    for idx, row in df_asig.iterrows():
+        if pd.notna(row["profesor"]):
+            continue
+            
+        materia = row["materia"]
+        turno = row["turno"]
+
+        # Intentar obtener profesor disponible
+        profesor = obtener_profe_para_materia(materia=materia, turno=turno)
+
+        # Si no hay profesor disponible con capacidad
+        if profesor is None:
+            # Buscar entre todos los que pueden dar la materia
+            posibles = df_prof_mat[df_prof_mat["materia"] == materia]["profesor"]
+            df_posibles = df_prof[df_prof["nombre"].isin(posibles)].copy()
+
+            # Filtrar por turno
+            if turno == "matutino":
+                df_posibles = df_posibles[df_posibles["da_matutino"] == 1]
+            elif turno == "vespertino":
+                df_posibles = df_posibles[df_posibles["da_vespertino"] == 1]
+
+            # Elegir al de mayor calificación pero menor carga
+            df_posibles['carga'] = df_posibles['mat_asig'] / df_posibles['materias']
+            df_posibles = df_posibles.sort_values(by=["carga", "calificacion"], ascending=[True, False])
+
+            profesor = df_posibles.iloc[0]["nombre"]
+            print(f"[EXTRA] {profesor} recibe una materia extra: {materia}")
+
+        # Registrar el profesor en df_asig
+        df_asig.loc[idx, "profesor"] = profesor
+        
+        # Actualizar mat_asig en df_prof
+        df_prof.loc[df_prof["nombre"] == profesor, "mat_asig"] += 1
+
+# Ejecutar la asignación mejorada
+asignar_profesores()
+
+# Exportación de datos
 df_asig.to_csv('asignaciones.csv', index=False, encoding='utf-8')
 df_salon_horario.to_csv('salones_horarios.csv', index=False, encoding='utf-8')
