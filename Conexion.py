@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 
 class MariaDB:
     def __init__(self, env_path=".env"):
-        # Cargar archivo .env si existe
+        # Cargar archivo .env
         load_dotenv(env_path)
 
         self.host = os.getenv("DB_HOST", "localhost")
@@ -40,9 +40,7 @@ class MariaDB:
             self.conn.close()
 
     def ejecutar(self, query, params=None):
-        """
-        Ejecuta INSERT, UPDATE o DELETE.
-        """
+        """Ejecuta INSERT, UPDATE o DELETE."""
         try:
             self.cursor.execute(query, params or ())
             self.conn.commit()
@@ -52,9 +50,7 @@ class MariaDB:
             return None
 
     def consultar(self, query, params=None):
-        """
-        Ejecuta SELECT y devuelve los resultados.
-        """
+        """Ejecuta SELECT y devuelve los resultados."""
         try:
             self.cursor.execute(query, params or ())
             return self.cursor.fetchall()

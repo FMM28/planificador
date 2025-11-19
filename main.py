@@ -1,3 +1,13 @@
+"""
+Codigo realizado por:
+
+Contreras Emigdio Ernesto Missael
+López González Angel Manuel
+Lozano Ramos Anahi Alondra
+Marquez Maya Francisco
+Ruiz Salas Pedro Alejandro 
+"""
+
 from Conexion import MariaDB
 import pandas as pd
 
@@ -22,8 +32,6 @@ columnas = ['semestre','nombre_materia']
 res = conn.consultar(f"SELECT {','.join(columnas)} FROM materias")
 df_mat = pd.DataFrame(res,columns=columnas)
 df_mat['semestre'] = df_mat['semestre'].replace({'primero':1,'segundo':2,'tercero':3,'cuarto':4,'quinto':5,'sexto':6,'septimo':7,'octavo':8,'noveno':9})
-df_mat['grupos_mat'] = df_mat['semestre'].apply(lambda x: 2 if x % 2 == 0 else 4)
-df_mat['grupos_des'] = df_mat['semestre'].apply(lambda x: 2 if x % 2 == 0 else 4)
 print(df_mat)
 print(df_mat.dtypes)
 
@@ -149,7 +157,6 @@ print(df_prof)
 conn.cerrar()
 
 #----------- Asignacion de grupos ------------
-print("Total de grupos por asignar:",sum(df_mat['grupos_mat'])+sum(df_mat['grupos_des']))
 
 #Preparacion columnas soporte
 df_prof['mat_asig'] = 0
